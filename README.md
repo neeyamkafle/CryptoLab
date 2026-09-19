@@ -2,7 +2,7 @@
 
 A cryptography toolkit built entirely from scratch — no external cryptography libraries — to genuinely understand the mathematics underlying computational security, not just call functions that implement it.
 
-Built over 7 days as a self-directed project applying number theory, probability, and algorithmic thinking to real cryptographic systems: classical ciphers, RSA, Diffie-Hellman key exchange, and cryptographic hashing.
+Built over 7+ days as a self-directed project applying number theory, probability, and algorithmic thinking to real cryptographic systems: classical ciphers, RSA, Diffie-Hellman key exchange, cryptographic hashing, and XOR cryptanalysis.
 
 ## Why this project exists
 
@@ -26,20 +26,27 @@ Full RSA key generation, encryption, and decryption, built entirely on the Day 2
 Simulates Alice and Bob agreeing on a shared secret while an eavesdropper (Eve) watches every exchanged message. Includes a working brute-force attack demonstrating the discrete logarithm problem — and why it's the small size of the numbers here (not a flaw in the algorithm) that makes the attack feasible in this toy example.
 
 ### `day5_hashing.py` + `day5b_birthday_paradox.py` — Hashing, Honestly
-This is the most important file in the project, not because the code is complex, but because of what it documents: **four successive attempts** to build a hash function with a genuine "avalanche effect" (where changing one input character scrambles the entire output), each one improving on a specific flaw discovered through testing, and each one still falling short of what real algorithms like SHA-256 achieve. The final comparison against Python's built-in SHA-256 makes the gap concrete and visible.
+This documents **four successive attempts** to build a hash function with a genuine "avalanche effect" (where changing one input character scrambles the entire output), each one improving on a specific flaw discovered through testing, and each one still falling short of what real algorithms like SHA-256 achieve. The final comparison against Python's built-in SHA-256 makes the gap concrete and visible.
 
 The birthday paradox simulation (Monte Carlo methods, validated against theoretical predictions across three parameter sets) explains *why* hash functions need enormous output spaces — collisions are findable in roughly √N attempts, not N attempts.
 
 ### `day6_cryptolab_cli.py` — Everything, Integrated
 An interactive command-line tool tying every previous day's work into one usable program.
 
+### `day7_xor_cryptanalysis.py` — Real Attacks, Real Limitations
+This file extends Day 1's frequency-analysis technique into genuine cryptanalysis: a **known-plaintext attack** (recovering key bytes when part of the plaintext is guessable — e.g., a known flag format), a **single-byte XOR brute-force breaker**, and a **general repeating-key XOR breaker** for unknown key lengths, built by splitting ciphertext into interleaved groups and solving each as an independent single-byte problem.
+
+While building this, I discovered a real, subtle bug: my `score_text` function was case-insensitive, which let an incorrect key (`'KLY'`) tie with the correct one (`'key'`) since both produce identical letter-frequency profiles when case is ignored. Fixing this required adding a printable-character check. Even after that fix, testing revealed a second, genuine limitation — on short ciphertext split into multiple groups, each group has too few characters for frequency analysis to reliably outperform random chance, a direct real-world instance of the Law of Large Numbers explored in the Day 5 birthday paradox simulation. Confirmed by testing: the same attack succeeds reliably once given a longer ciphertext sample.
+
 ## What I actually learned (the honest version)
 
 The hashing section taught me more than any other part of this project — not because I succeeded, but because I didn't, and had to understand *why*. Building a cryptographically strong hash function isn't a matter of finding the right formula; it requires many rounds of bitwise mixing applied to an entire internal state at once, a fundamentally different architecture than sequential character-by-character combination. Discovering this through iteration, rather than being told it upfront, is the kind of understanding I was hoping this project would produce.
 
+The XOR cryptanalysis work taught a related lesson from a different angle: frequency analysis is a genuinely powerful statistical tool, but it needs enough data to work reliably. Watching it fail on short samples and succeed on longer ones — both confirmed by direct testing rather than assumption — connected two parts of this project (Day 5's Monte Carlo methods and Day 1's cipher-breaking) that I hadn't originally expected to relate to each other.
+
 ## On the process
 
-I built this with guidance from an AI tutor — working through the mathematics by hand first (tracing algorithms like Extended Euclidean by hand before coding them), then writing and debugging the actual implementation myself. Every bug in this project's history — modular arithmetic wraparound, case-sensitivity handling, the `extended_gcd` formula, the menu structure — was one I found and fixed, with conceptual explanations rather than solutions provided when I got stuck.
+I built this with guidance from an AI tutor — working through the mathematics by hand first (tracing algorithms like Extended Euclidean by hand before coding them), then writing and debugging the actual implementation myself. Every bug in this project's history — modular arithmetic wraparound, case-sensitivity handling, the `extended_gcd` formula, the menu structure, the XOR scorer's case-blindness — was one I found and fixed, with conceptual explanations rather than solutions provided when I got stuck.
 
 ## Running it
 
